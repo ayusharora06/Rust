@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 fn main(){
     let arr: Vec<i32>= vec![1,2,3,4,5,6,7,8,10];
     let arr_length:i32= arr.len() as i32;
@@ -56,6 +58,39 @@ fn main(){
         let ciel = find_ciel(&arr, i,0, (arr.len() -1) as i32,-1);
         println!("number {}, floor, {}, ciel {}",i, floor, ciel);
     }
+
+    //------------------------------------sqrt
+    println!("find sqrt");
+    let num = 120;
+    let sqrt = sqrt(num,num/2,-1);
+    println!("sqrt {}",sqrt);
+    
+    //------------------------------------correct  conditions
+    println!("find frequency of numbers");
+    let arr: Vec<i32>= vec![2, 2, 2, 4, 4, 4, 5, 5, 6, 8, 8, 9];
+    let mut freq:HashMap<i32, i32> = HashMap::new();
+    let freq_array = find_frequency_of_each_element(&arr, 0, (arr.len() -1) as i32, freq);
+    println!("frequency , {:?}", freq_array);
+
+
+
+    //------------------------------------correct  conditions
+     println!("find occurance");
+     let arr: Vec<i32>= vec![2, 2, 1, 1, 3, 3, 2, 2, 4, 4, 1, 1,3,3];
+     let odd_occurance = find_odd_occurance(&arr, 0, (arr.len() -1) as i32);
+     println!("odd occurance , {:?}", odd_occurance);
+
+    //--------------------------------------------
+    println!("find pairs");
+    let arr: Vec<i32>= vec![1,2,3,4,5,6,7,8,10];
+    find_pair(&arr,2);
+
+
+    //--------------------------------------------
+    println!("find pairs");
+    let arr: Vec<i32>= vec![1,2,3,4,5,6,7,8,10];
+    let closestes = find_closest(&arr,3,2,0,(arr.len() -1 )as i32);
+    println!("closests {:?}", closestes);
 
 }
 
@@ -251,4 +286,103 @@ fn find_ciel(num_arr:&Vec<i32>, target:i32, start: i32, end:i32, result:i32) -> 
         return find_ciel(&num_arr, target, start, mid -1, num_arr[mid as usize]);
 
     }
+}
+
+fn sqrt(num:i32, mid:i32,result:i32)->i32{
+    // let mid = (start + num) / 2;
+    let sq = mid * mid;
+    if sq == num{
+        return mid;
+    }
+    if sq < num{
+        return mid;
+    }else{
+        return sqrt(num, mid-1, result);
+    }
+}
+
+fn find_frequency_of_each_element(num_arr: &Vec<i32>,start: i32,end: i32,mut freq: HashMap<i32, i32>,) -> HashMap<i32, i32> {
+    if start >  end {
+        return freq;
+    }
+    let mid = (start + end) / 2;
+    if num_arr[start as usize] == num_arr[mid as usize]{
+        // Check if the key exists and update it if needed
+        if let Some(existing_value) = freq.get_mut(&num_arr[mid as usize]) {
+            *existing_value = *existing_value + (mid-start) + 1; // Update the value
+        } else {
+            // Key doesn't exist, so insert a new key-value pair
+            freq.insert(num_arr[mid as usize], (mid-start) + 1);
+        }
+        return find_frequency_of_each_element(num_arr, mid + 1, (num_arr.len() -1) as i32 , freq);
+    }else{
+        return find_frequency_of_each_element(num_arr, start, mid, freq)
+    }
+}
+
+fn find_odd_occurance(num_arr: &Vec<i32>,start: i32,end: i32)-> i32{
+    // nums[] = { 2, 2, 1, 1, 3, 3, 2, 2, 4, 4, 3, 1, 1 }
+    // pos[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }
+    let mid = (start + end) / 2;
+    println!("mid {}, start {}, end {}",mid, start, end);
+    if start > end {
+        return -1;
+    }
+    if start == end {
+        return num_arr[start as usize];
+    }
+    if mid % 2 == 0 {
+        if num_arr[mid as usize] == num_arr[(mid + 1) as usize]{
+            return find_odd_occurance(num_arr, mid + 2, end);
+        }else{
+            return find_odd_occurance(num_arr, start, mid-1);
+        }
+    }else{
+        if num_arr[mid as usize] == num_arr[(mid - 1) as usize]{
+            return find_odd_occurance(num_arr, mid + 1, end);
+        }else{
+            return find_odd_occurance(num_arr, start, mid - 1);
+        }
+    }
+}
+
+
+fn new_binary_search(num_arr: &Vec<i32>,target:i32,start: i32,end: i32)->i32 {
+    if start > end{
+        return -1;
+    }
+    let mid = (start+end) / 2;
+    if num_arr[mid as usize] == target{
+        return target;
+    }
+    if num_arr[mid as usize] > target{
+        return  new_binary_search(&num_arr, target, start, mid -1);
+    }else{
+        return  new_binary_search(num_arr, target, mid +1, end);
+    }
+
+}
+fn find_pair(num_arr: &Vec<i32>, sub:i32){
+    for i in num_arr.iter(){
+        let result = new_binary_search(num_arr, i - sub, 0, num_arr.len() as i32);
+        if result != -1{
+            println!("{},{}", i,result)
+        }
+    }
+}
+
+fn find_closest(num_arr: &Vec<i32>, k:i32, target:i32, start: i32, end: i32)->&[i32]{
+    // nums = [10, 12, 15, 17, 18, 20, 25]
+    // println!("start {}, end {}",start, end);
+    if (end-start) < k{
+        return &num_arr[(start as usize)..((end+1) as usize)];
+    }
+
+    if (num_arr[start as usize] - target).abs() > (num_arr[end as usize] - target).abs(){
+        return find_closest(num_arr, k, target, start + 1,end)
+    }else{
+        return find_closest(num_arr, k, target, start,end -1)
+
+    }
+
 }
